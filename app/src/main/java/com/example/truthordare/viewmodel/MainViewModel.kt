@@ -112,14 +112,13 @@ class MainViewModel(
 
             val currentState = _uiState.value
             val apiRating = if (currentState.selectedRating == QuestionRating.ADULT) "r" else "pg"
-            val typeToFetch = if (currentState.currentType == "BOTH") {
-                if (kotlin.random.Random.nextBoolean()) "truth" else "dare"
-            } else {
-                currentState.currentType.lowercase()
-            }
 
             try {
-                val apiQuestion = if (typeToFetch == "truth") api.getTruth(apiRating) else api.getDare(apiRating)
+                val apiQuestion = when (currentState.currentType.uppercase()) {
+                    "TRUTH" -> api.getTruth(apiRating)
+                    "DARE" -> api.getDare(apiRating)
+                    else -> api.getWyr(apiRating) // "BOTH" mode uses the WYR (Would You Rather) endpoint
+                }
 
                 // ENSURE EN IS ALWAYS PRESENT AND FALLBACK FOR ALL LANGUAGES
                 val translations = (apiQuestion.translations ?: emptyMap()).toMutableMap()
@@ -129,7 +128,7 @@ class MainViewModel(
                 
                 // Fallback all languages to English if they are missing
                 listOf("vi", "fr", "es", "de").forEach { lang ->
-                    if (!translations.containsKey(lang)) {
+                    if (!translations.containsKey(lang) || translations[lang].isNullOrBlank()) {
                         translations[lang] = translations["en"] ?: ""
                     }
                 }
