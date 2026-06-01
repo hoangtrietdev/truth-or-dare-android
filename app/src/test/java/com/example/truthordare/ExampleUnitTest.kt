@@ -1,4 +1,4 @@
-package com.example.truthordare
+package com.ninstudio.truthordare
 
 import org.junit.Test
 
